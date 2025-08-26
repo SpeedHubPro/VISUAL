@@ -1,0 +1,209 @@
+-- SpeedHubV2 UI Script (with Checkbox Confirmation + Loading + Command Panel)
+-- Made by ChatGPT (custom template)
+
+-- Services
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Clear old GUIs
+if playerGui:FindFirstChild("SpeedHubUI") then
+    playerGui.SpeedHubUI:Destroy()
+end
+
+-- Main UI ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedHubUI"
+ScreenGui.Parent = playerGui
+
+-------------------------
+-- FIRST PANEL (Delta Settings Warning + Checkbox)
+-------------------------
+local PopupFrame = Instance.new("Frame")
+PopupFrame.Size = UDim2.new(0, 380, 0, 230)
+PopupFrame.Position = UDim2.new(0.5, -190, 0.5, -115)
+PopupFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+PopupFrame.BorderSizePixel = 0
+PopupFrame.Parent = ScreenGui
+
+local PopupTitle = Instance.new("TextLabel")
+PopupTitle.Size = UDim2.new(1, -20, 0, 50)
+PopupTitle.Position = UDim2.new(0, 10, 0, 10)
+PopupTitle.BackgroundTransparency = 1
+PopupTitle.TextWrapped = true
+PopupTitle.Text = "⚠ Turn off all the following Delta settings, or the script will fail. ⚠"
+PopupTitle.TextColor3 = Color3.fromRGB(255, 50, 50)
+PopupTitle.Font = Enum.Font.SourceSansBold
+PopupTitle.TextSize = 18
+PopupTitle.Parent = PopupFrame
+
+local PopupText = Instance.new("TextLabel")
+PopupText.Size = UDim2.new(1, -20, 0, 100)
+PopupText.Position = UDim2.new(0, 10, 0, 60)
+PopupText.BackgroundTransparency = 1
+PopupText.TextXAlignment = Enum.TextXAlignment.Left
+PopupText.TextYAlignment = Enum.TextYAlignment.Top
+PopupText.TextWrapped = true
+PopupText.Text = "1. Disable Anti-AFK\n2. Disable Verify Teleport\n3. Disable Anti-Scam\n\nAfter disabling, check the box below and press Confirm to continue."
+PopupText.TextColor3 = Color3.fromRGB(255, 255, 255)
+PopupText.Font = Enum.Font.SourceSans
+PopupText.TextSize = 16
+PopupText.Parent = PopupFrame
+
+-- Checkbox
+local Checkbox = Instance.new("TextButton")
+Checkbox.Size = UDim2.new(0, 20, 0, 20)
+Checkbox.Position = UDim2.new(0, 20, 1, -60)
+Checkbox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Checkbox.Text = ""
+Checkbox.Parent = PopupFrame
+
+local CheckboxLabel = Instance.new("TextLabel")
+CheckboxLabel.Size = UDim2.new(1, -50, 0, 20)
+CheckboxLabel.Position = UDim2.new(0, 50, 1, -60)
+CheckboxLabel.BackgroundTransparency = 1
+CheckboxLabel.Text = "I have disabled the above settings"
+CheckboxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckboxLabel.Font = Enum.Font.SourceSans
+CheckboxLabel.TextSize = 16
+CheckboxLabel.TextXAlignment = Enum.TextXAlignment.Left
+CheckboxLabel.Parent = PopupFrame
+
+local ConfirmButton = Instance.new("TextButton")
+ConfirmButton.Size = UDim2.new(0, 120, 0, 35)
+ConfirmButton.Position = UDim2.new(0.5, -60, 1, -40)
+ConfirmButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Disabled gray
+ConfirmButton.Text = "Confirm"
+ConfirmButton.Font = Enum.Font.SourceSansBold
+ConfirmButton.TextSize = 18
+ConfirmButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+ConfirmButton.AutoButtonColor = false
+ConfirmButton.Parent = PopupFrame
+
+local isChecked = false
+
+Checkbox.MouseButton1Click:Connect(function()
+    isChecked = not isChecked
+    if isChecked then
+        Checkbox.Text = "✔"
+        ConfirmButton.BackgroundColor3 = Color3.fromRGB(0, 200, 100) -- Green when enabled
+        ConfirmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ConfirmButton.AutoButtonColor = true
+    else
+        Checkbox.Text = ""
+        ConfirmButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Gray disabled
+        ConfirmButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ConfirmButton.AutoButtonColor = false
+    end
+end)
+
+-------------------------
+-- LOADING SCREEN
+-------------------------
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.new(0, 300, 0, 120)
+LoadingFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.Visible = false
+LoadingFrame.Parent = ScreenGui
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, 0, 0, 40)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Loading GAG Script"
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.Font = Enum.Font.SourceSansBold
+LoadingText.TextSize = 18
+LoadingText.Parent = LoadingFrame
+
+local ProgressBG = Instance.new("Frame")
+ProgressBG.Size = UDim2.new(1, -20, 0, 15)
+ProgressBG.Position = UDim2.new(0, 10, 0.5, 0)
+ProgressBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ProgressBG.BorderSizePixel = 0
+ProgressBG.Parent = LoadingFrame
+
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Size = UDim2.new(0, 0, 0, 15)
+ProgressBar.Position = ProgressBG.Position
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+ProgressBar.BorderSizePixel = 0
+ProgressBar.Parent = LoadingFrame
+
+local PercentText = Instance.new("TextLabel")
+PercentText.Size = UDim2.new(1, 0, 0, 30)
+PercentText.Position = UDim2.new(0, 0, 0.8, 0)
+PercentText.BackgroundTransparency = 1
+PercentText.Text = "0%"
+PercentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+PercentText.Font = Enum.Font.SourceSans
+PercentText.TextSize = 16
+PercentText.Parent = LoadingFrame
+
+-------------------------
+-- COMMAND PANEL (SpeedHubV2)
+-------------------------
+local PanelFrame = Instance.new("Frame")
+PanelFrame.Size = UDim2.new(0, 250, 0, 220)
+PanelFrame.Position = UDim2.new(0.5, -125, 0.5, -110)
+PanelFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+PanelFrame.BorderSizePixel = 0
+PanelFrame.Visible = false
+PanelFrame.Parent = ScreenGui
+
+local PanelTitle = Instance.new("TextLabel")
+PanelTitle.Size = UDim2.new(1, 0, 0, 40)
+PanelTitle.BackgroundTransparency = 1
+PanelTitle.Text = "SpeedHubV2"
+PanelTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+PanelTitle.Font = Enum.Font.SourceSansBold
+PanelTitle.TextSize = 20
+PanelTitle.Parent = PanelFrame
+
+local function createButton(name, posY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.8, 0, 0, 35)
+    button.Position = UDim2.new(0.1, 0, 0, posY)
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.Text = name
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 16
+    button.Parent = PanelFrame
+    return button
+end
+
+createButton("Trade Scam", 50)
+createButton("Dupe Panel", 90)
+createButton("ESP EGG & RANDOMIZER", 130)
+createButton("THANHUB", 170)
+
+local MadeBy = Instance.new("TextLabel")
+MadeBy.Size = UDim2.new(1, 0, 0, 20)
+MadeBy.Position = UDim2.new(0, 0, 1, -20)
+MadeBy.BackgroundTransparency = 1
+MadeBy.Text = "Made by SpeedHubV2"
+MadeBy.TextColor3 = Color3.fromRGB(200, 200, 200)
+MadeBy.Font = Enum.Font.SourceSans
+MadeBy.TextSize = 12
+MadeBy.Parent = PanelFrame
+
+-------------------------
+-- SCRIPT LOGIC
+-------------------------
+ConfirmButton.MouseButton1Click:Connect(function()
+    if not isChecked then return end -- prevent clicking without checkbox
+    
+    PopupFrame.Visible = false
+    LoadingFrame.Visible = true
+
+    for i = 1, 100 do
+        ProgressBar.Size = UDim2.new(i/100, 0, 0, 15)
+        PercentText.Text = i .. "%"
+        wait(0.05) -- 5 seconds total
+    end
+
+    LoadingFrame.Visible = false
+    PanelFrame.Visible = true
+end)
